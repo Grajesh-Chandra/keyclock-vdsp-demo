@@ -32,6 +32,9 @@ services:
       KC_HTTP_ENABLED: true
       KC_HEALTH_ENABLED: true
       KC_METRICS_ENABLED: true
+      KC_PROXY: edge
+      KC_HOSTNAME_URL: http://localhost:8880
+      KC_HOSTNAME_ADMIN_URL: http://localhost:8880
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: keycloak
@@ -49,6 +52,34 @@ services:
         condition: service_healthy
     networks:
       - vdsp-network
+
+  vc-authn-oidc-bridge:
+    build:
+      context: ./vc-authn-oidc-bridge
+      dockerfile: Dockerfile
+    container_name: vc-authn-oidc-bridge
+    environment:
+      PORT: 5001
+      SESSION_SECRET: vc-authn-session-secret-change-me
+      ISSUER_URL: http://localhost:5001
+      CONTROLLER_URL: http://localhost:5001
+      KEYCLOAK_CLIENT_ID: vc-authn
+      KEYCLOAK_CLIENT_SECRET: vc-authn-secret-change-me
+      KEYCLOAK_REDIRECT_URI: http://localhost:8880/realms/vdsp-demo/broker/vc-authn/endpoint
+      VERIFIER_SERVER_URL: http://host.docker.internal:8081
+      VERIFIER_CLIENT_ID: federatedlogin
+      VERIFIER_AUTH_TOKEN: my_secure_token
+      JWT_ALGORITHM: RS256
+      HASH_SALT: random-hash-salt-change-me
+    ports:
+      - "5001:5001"
+    networks:
+      - vdsp-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   demo-app:
     build:

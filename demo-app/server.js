@@ -7,42 +7,51 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const https = require('https');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Create a custom HTTP agent that routes localhost:8880 requests to keycloak:8080
-const originalHttpRequest = http.request;
-http.request = function(options, callback) {
-  if (typeof options === 'string') {
-    options = new URL(options);
-  }
-  if (options && options.hostname === 'localhost' && (options.port == 8880 || options.host === 'localhost:8880')) {
-    console.log(`🔀 Routing ${options.hostname}:${options.port || 80} → keycloak:8080`);
-    options.hostname = 'keycloak';
-    options.host = 'keycloak:8080';
-    options.port = 8080;
-  }
+// Only use custom routing when running in Docker
+// When running locally, we want to keep localhost:8880
+const USE_DOCKER_ROUTING = process.env.USE_DOCKER_ROUTING === 'true';
 
-  // Intercept response to log token endpoint errors
-  const originalCallback = callback;
-  const wrappedCallback = function(res) {
-    if (res.statusCode && res.statusCode !== 200 && options.path && options.path.includes('/token')) {
-      let body = '';
-      res.on('data', chunk => body += chunk);
-      res.on('end', () => {
-        console.error('🔴 Keycloak Token Endpoint Error:');
-        console.error('  Status:', res.statusCode);
-        console.error('  Response:', body);
-      });
+if (USE_DOCKER_ROUTING) {
+  // Create a custom HTTP agent that routes localhost:8880 requests to keycloak:8080
+  const originalHttpRequest = http.request;
+  http.request = function(options, callback) {
+    if (typeof options === 'string') {
+      options = new URL(options);
     }
-    if (originalCallback) {
-      originalCallback(res);
+    if (options && options.hostname === 'localhost' && (options.port == 8880 || options.host === 'localhost:8880')) {
+      console.log(`🔀 Routing ${options.hostname}:${options.port || 80} → keycloak:8080`);
+      options.hostname = 'keycloak';
+      options.host = 'keycloak:8080';
+      options.port = 8080;
     }
+
+    // Intercept response to log token endpoint errors
+    const originalCallback = callback;
+    const wrappedCallback = function(res) {
+      if (res.statusCode && res.statusCode !== 200 && options.path && options.path.includes('/token')) {
+        let body = '';
+        res.on('data', chunk => body += chunk);
+        res.on('end', () => {
+          console.error('🔴 Keycloak Token Endpoint Error:');
+          console.error('  Status:', res.statusCode);
+          console.error('  Response:', body);
+        });
+      }
+      if (originalCallback) {
+        originalCallback(res);
+      }
+    };
+
+    return originalHttpRequest.call(this, options, wrappedCallback);
   };
-
-  return originalHttpRequest.call(this, options, wrappedCallback);
-};
+} else {
+  console.log('📍 Running locally - using localhost:8880 for Keycloak');
+}
 
 // Middleware
 app.use(morgan('combined'));
@@ -107,7 +116,19 @@ keycloak.grantManager.obtainFromCode = async function(request, code, sessionId, 
   }
 };
 
-app.use(keycloak.middleware());// Set view engine
+app.use(keycloak.middleware());// Rate limiting for all routes to prevent abuse
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Apply rate limiter to all routes
+app.use(limiter);
+
+// Set view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 

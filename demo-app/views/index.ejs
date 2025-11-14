@@ -31,85 +31,164 @@
     <main class="main-content">
         <div class="container">
             <div class="hero">
-                <h1 class="hero-title">Welcome to Keycloak Demo</h1>
-                <p class="hero-subtitle">Experience OAuth 2.0 Authentication with Keycloak</p>
+                <h1 class="hero-title">VDSP Federated Login Demo</h1>
+                <p class="hero-subtitle">Verifiable Credential Authentication with Keycloak & DIDComm</p>
+                <div class="hero-badges">
+                    <span class="badge">🔐 OpenID Connect</span>
+                    <span class="badge">📱 DIDComm v2</span>
+                    <span class="badge">✅ Verifiable Credentials</span>
+                    <span class="badge">🔑 Keycloak IAM</span>
+                </div>
             </div>
 
             <div class="architecture-diagram">
-                <h2>Architecture Flow</h2>
+                <h2>🏗️ VDSP Architecture Flow</h2>
+                <p class="arch-subtitle">Federated Login with Verifiable Credentials - "Login with VC" like "Login with Google"</p>
                 <div class="flow-container">
                     <div class="flow-step">
                         <div class="step-icon">👤</div>
                         <div class="step-label">User Browser</div>
+                        <div class="step-desc">Clicks "Login with VC"</div>
                     </div>
                     <div class="flow-arrow">→</div>
                     <div class="flow-step">
                         <div class="step-icon">🌐</div>
                         <div class="step-label">Demo App</div>
+                        <div class="step-desc">Port 3000</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step highlight">
+                        <div class="step-icon">🔑</div>
+                        <div class="step-label">Keycloak IAM</div>
+                        <div class="step-desc">Port 8880</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step highlight">
+                        <div class="step-icon">🔗</div>
+                        <div class="step-label">OIDC Bridge</div>
+                        <div class="step-desc">Port 5001</div>
                     </div>
                     <div class="flow-arrow">→</div>
                     <div class="flow-step">
-                        <div class="step-icon">🔑</div>
-                        <div class="step-label">Keycloak IAM</div>
+                        <div class="step-icon">📱</div>
+                        <div class="step-label">QR Code</div>
+                        <div class="step-desc">Scan with Wallet</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step highlight">
+                        <div class="step-icon">🔐</div>
+                        <div class="step-label">Dart Verifier</div>
+                        <div class="step-desc">Port 8081 + MPX SDK</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="step-icon">📲</div>
+                        <div class="step-label">Wallet App</div>
+                        <div class="step-desc">Share Credentials</div>
+                    </div>
+                </div>
+
+                <div class="architecture-details">
+                    <div class="arch-component">
+                        <h4>🔗 OIDC Bridge</h4>
+                        <p>Acts as OpenID Connect Identity Provider for Verifiable Credentials</p>
+                        <ul>
+                            <li>Converts VP → ID Token (JWT)</li>
+                            <li>Displays QR Code for wallet scanning</li>
+                            <li>WebSocket for real-time updates</li>
+                        </ul>
+                    </div>
+                    <div class="arch-component">
+                        <h4>🔐 Dart Verifier</h4>
+                        <p>Handles DIDComm protocol with Affinidi MPX SDK</p>
+                        <ul>
+                            <li>Generates Out-of-Band invitations</li>
+                            <li>Verifies Verifiable Presentations</li>
+                            <li>Manages DIDComm messaging</li>
+                        </ul>
+                    </div>
+                    <div class="arch-component">
+                        <h4>🔑 Keycloak IAM</h4>
+                        <p>Enterprise Identity & Access Management</p>
+                        <ul>
+                            <li>Federated Identity Provider support</li>
+                            <li>User account federation</li>
+                            <li>Standard OAuth 2.0 / OIDC flows</li>
+                        </ul>
                     </div>
                 </div>
             </div>
 
             <div class="scenarios-grid">
-                <h2>Demo Scenarios</h2>
+                <h2>🎯 Authentication Methods</h2>
                 <div class="grid">
-                    <div class="card">
-                        <div class="card-icon">👔</div>
-                        <h3>Employee Portal</h3>
-                        <p>Secure employee portal access using Keycloak authentication.</p>
-                        <a href="/employee-portal" class="btn">Try Demo →</a>
+                    <div class="card featured">
+                        <div class="card-icon">🎫</div>
+                        <h3>Login with Verifiable Credentials</h3>
+                        <p>Modern passwordless authentication using your digital wallet and verifiable credentials.</p>
+                        <div class="card-features">
+                            <span class="feature-tag">✅ Passwordless</span>
+                            <span class="feature-tag">🔒 Privacy-Preserving</span>
+                            <span class="feature-tag">📱 Mobile-First</span>
+                        </div>
+                        <a href="/login?kc_idp_hint=vc-authn" class="btn btn-primary">Try VC Login →</a>
                     </div>
 
                     <div class="card">
-                        <div class="card-icon">🎂</div>
-                        <h3>Age Verification</h3>
-                        <p>Age-restricted service access with Keycloak.</p>
-                        <a href="/age-verification" class="btn">Try Demo →</a>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-icon">🏥</div>
-                        <h3>Professional Portal</h3>
-                        <p>Professional portal with secure authentication.</p>
-                        <a href="/professional-portal" class="btn">Try Demo →</a>
+                        <div class="card-icon">👤</div>
+                        <h3>Traditional Login</h3>
+                        <p>Standard username and password authentication via Keycloak.</p>
+                        <div class="card-features">
+                            <span class="feature-tag">🔑 Username/Password</span>
+                        </div>
+                        <a href="/login" class="btn">Standard Login →</a>
                     </div>
                 </div>
             </div>
 
             <div class="features-section">
-                <h2>Key Features</h2>
+                <h2>🚀 Key Features</h2>
                 <div class="features-grid">
                     <div class="feature-item">
-                        <span class="feature-icon">✅</span>
+                        <span class="feature-icon">🎫</span>
                         <div>
-                            <h4>Standards-Based</h4>
-                            <p>Uses OAuth 2.0 and OpenID Connect protocols</p>
+                            <h4>Verifiable Credentials</h4>
+                            <p>W3C standard credentials for privacy-preserving authentication</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📱</span>
+                        <div>
+                            <h4>DIDComm Protocol</h4>
+                            <p>Secure peer-to-peer messaging with Affinidi MPX SDK</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔗</span>
+                        <div>
+                            <h4>Federated Identity</h4>
+                            <p>Seamless integration with Keycloak as Identity Broker</p>
                         </div>
                     </div>
                     <div class="feature-item">
                         <span class="feature-icon">🔒</span>
                         <div>
-                            <h4>Secure</h4>
-                            <p>Enterprise-grade security with Keycloak</p>
+                            <h4>Zero-Knowledge Proofs</h4>
+                            <p>Share only what's needed, preserve privacy</p>
                         </div>
                     </div>
                     <div class="feature-item">
-                        <span class="feature-icon">📈</span>
+                        <span class="feature-icon">⚡</span>
                         <div>
-                            <h4>Scalable</h4>
-                            <p>Horizontal scaling with session management</p>
+                            <h4>Real-Time Updates</h4>
+                            <p>WebSocket-based instant credential verification</p>
                         </div>
                     </div>
                     <div class="feature-item">
-                        <span class="feature-icon">🔄</span>
+                        <span class="feature-icon">🌐</span>
                         <div>
-                            <h4>Flexible</h4>
-                            <p>Easy integration with existing systems</p>
+                            <h4>Standards-Based</h4>
+                            <p>OAuth 2.0, OpenID Connect, W3C VC/VP standards</p>
                         </div>
                     </div>
                 </div>
@@ -117,33 +196,66 @@
 
             <% if (!user) { %>
             <div class="cta-section">
-                <h2>Ready to Experience Keycloak Authentication?</h2>
-                <p>Login with your credentials to see the complete flow in action</p>
-                <a href="/login" class="btn btn-primary btn-large">Login with Keycloak</a>
+                <h2>🎯 Ready to Experience Passwordless Login?</h2>
+                <p>Choose your authentication method to see the complete flow in action</p>
+                <div class="cta-buttons">
+                    <a href="/login?kc_idp_hint=vc-authn" class="btn btn-primary btn-large">
+                        🎫 Login with Verifiable Credentials
+                    </a>
+                    <a href="/login" class="btn btn-secondary btn-large">
+                        🔑 Traditional Login
+                    </a>
+                </div>
             </div>
             <% } else { %>
             <div class="cta-section success">
                 <h2>✅ You're Authenticated!</h2>
-                <p>Welcome back, <%= user.preferred_username || user.sub %>!</p>
+                <p>Welcome back, <%= user.preferred_username || user.name || user.email || user.sub %>!</p>
                 <a href="/profile" class="btn btn-primary btn-large">View Your Profile</a>
             </div>
             <% } %>
 
             <div class="technical-info">
-                <h3>Technical Implementation</h3>
+                <h3>🔧 Technical Stack</h3>
                 <div class="tech-details">
                     <div class="tech-item">
-                        <strong>Authentication Protocol:</strong> OAuth 2.0 / OpenID Connect 1.0
+                        <strong>🔐 Authentication:</strong> OAuth 2.0 / OpenID Connect 1.0 + W3C Verifiable Credentials
                     </div>
                     <div class="tech-item">
-                        <strong>Identity Provider:</strong> Keycloak 23.0
+                        <strong>🔑 IAM System:</strong> Keycloak 23.0 with Federated Identity Provider
                     </div>
                     <div class="tech-item">
-                        <strong>Backend:</strong> Node.js with Express
+                        <strong>🔗 OIDC Bridge:</strong> Node.js Express + Socket.io (Port 5001)
                     </div>
                     <div class="tech-item">
-                        <strong>Session Management:</strong> Memory-backed sessions
+                        <strong>📱 DIDComm Handler:</strong> Dart Shelf + Affinidi MPX SDK (Port 8081)
                     </div>
+                    <div class="tech-item">
+                        <strong>🎫 Credentials:</strong> W3C Verifiable Credentials & Presentations
+                    </div>
+                    <div class="tech-item">
+                        <strong>📲 Wallet:</strong> Flutter + Affinidi TDK + MPX SDK
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-boxes">
+                <div class="info-box">
+                    <h4>📖 Documentation</h4>
+                    <ul>
+                        <li><a href="http://localhost:5001/admin/docs" target="_blank">OIDC Bridge API Docs</a></li>
+                        <li><a href="/docs/architecture.md">Architecture Guide</a></li>
+                        <li><a href="/docs/implementation.md">Implementation Guide</a></li>
+                    </ul>
+                </div>
+                <div class="info-box">
+                    <h4>🔗 Service Endpoints</h4>
+                    <ul>
+                        <li><strong>Demo App:</strong> <code>http://localhost:3000</code></li>
+                        <li><strong>Keycloak:</strong> <code>http://localhost:8880</code></li>
+                        <li><strong>OIDC Bridge:</strong> <code>http://localhost:5001</code></li>
+                        <li><strong>Dart Verifier:</strong> <code>http://localhost:8081</code></li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -151,8 +263,8 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 VDSP Bridge Demo | <a href="https://github.com/openwallet-foundation/acapy-vc-authn-oidc">Open Source on GitHub</a></p>
-            <p>Built with ❤️ using Affinidi Developer tools</p>
+            <p>&copy; 2025 VDSP Federated Login Demo | Powered by <strong>Keycloak</strong> + <strong>Affinidi</strong></p>
+            <p>Built with ❤️ using Verifiable Credentials, DIDComm v2, and OpenID Connect</p>
         </div>
     </footer>
 

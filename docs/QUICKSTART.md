@@ -1,92 +1,155 @@
 # Quick Start Guide
 
-Get the Keycloak demo running in 5 minutes!
+Get the Federated VC Login demo running in 5 minutes!
 
 ## Prerequisites
 
 - Docker and Docker Compose installed
-- Ports 3000, 5432, and 8880 available
+- Node.js 18+ installed
+- Ports 3000, 5001, 8081, 8880 available
+- Dart Verifier server ready
 
 ## Steps
 
-### 1. Start the Services
+### 1. Start Keycloak and PostgreSQL
 
 ```bash
-# Using the startup script (recommended)
-./start.sh
+# Start Docker services
+docker compose up -d keycloak postgres
 
-# OR manually with docker-compose
-docker-compose up -d
+# Wait for services (about 30 seconds)
+docker compose logs -f keycloak
+# Look for "Keycloak ... started"
 ```
 
-### 2. Wait for Services to Start
-
-The services need about 30-60 seconds to fully start. You can monitor with:
+### 2. Start Dart Verifier
 
 ```bash
-# Watch the logs
-docker-compose logs -f
-
-# Check service status
-docker-compose ps
+cd /path/to/dart-verifier-server
+dart run bin/server.dart
+# Should run on http://localhost:8081
 ```
 
-### 3. Access the Application
+Verify it's running:
+```bash
+curl http://localhost:8081/api/oob/clients | grep federatedlogin
+```
+
+### 3. Start OIDC Bridge
+
+```bash
+cd vc-authn-oidc-bridge
+npm install
+npm start
+# Runs on http://localhost:5001
+```
+
+Verify it's running:
+```bash
+curl http://localhost:5001/health
+```
+
+### 4. Start Demo App
+
+```bash
+cd demo-app
+npm install
+npm start
+# Runs on http://localhost:3000
+```
+
+### 5. Test VC Authentication
 
 Open your browser to: **http://localhost:3000**
 
-### 4. Login
+#### Test Flow:
+1. Click **"Login with Verifiable Credentials"** button
+2. You'll be redirected to Keycloak
+3. Click **"Login with Verifiable Credentials"** on Keycloak page
+4. QR code appears with real-time status
+5. Scan QR code with your wallet app
+6. Share your Ayra Business Card credential
+7. Automatic redirect back to demo app
+8. You're logged in! 🎉
 
-Click "Login" button and use these test credentials:
+### 6. Verify User Creation
 
-- **Username**: `testuser`
-- **Password**: `password`
+1. Open Keycloak Admin: **http://localhost:8880/admin**
+2. Login: `admin` / `admin`
+3. Go to **Users**
+4. Find newly created user from VC
+5. Verify attributes populated (email, name, company)
 
-You'll be redirected to Keycloak, then back to the app after successful login.
+## Service Endpoints
 
-### 5. Explore
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Demo App | http://localhost:3000 | Main application |
+| OIDC Bridge | http://localhost:5001 | VC authentication provider |
+| Dart Verifier | http://localhost:8081 | DIDComm and VC verification |
+| Keycloak | http://localhost:8880 | Identity and Access Management |
+| Keycloak Admin | http://localhost:8880/admin | Admin console (admin/admin) |
 
-- View your profile at `/profile`
-- Try protected routes like `/employee-portal`
-- Check the Keycloak Admin Console at http://localhost:8880/admin (admin/admin)
+## Configuration Files
 
-## Test Users
+### OIDC Bridge (.env)
+```bash
+PORT=5001
+ISSUER_URL=http://localhost:5001
+VERIFIER_SERVER_URL=http://localhost:8081
+VERIFIER_CLIENT_ID=federatedlogin
+KEYCLOAK_CLIENT_ID=vc-authn
+KEYCLOAK_CLIENT_SECRET=vc-authn-secret-change-me
+```
 
-Two users are pre-configured:
-
-| Username | Password | Role  |
-|----------|----------|-------|
-| testuser | password | user  |
-| admin    | admin    | admin |
+### Keycloak Realm
+Pre-configured in `keycloak-config/vdsp-demo-realm.json`:
+- Realm: `vdsp-demo`
+- Identity Provider: `vc-authn`
+- Client: `vdsp-demo-app`
+- Mappers: email, given_name, family_name, company
 
 ## Common Commands
 
 ```bash
-# Stop services
-docker-compose down
+# Stop all services
+docker compose down
+# Stop local services: Ctrl+C
 
 # View logs
-docker-compose logs -f demo-app
-docker-compose logs -f keycloak
+docker compose logs -f keycloak
+tail -f vc-authn-oidc-bridge/oidc-bridge.log
+tail -f demo-app/demo-app.log
 
-# Restart services
-docker-compose restart
+# Restart OIDC Bridge
+cd vc-authn-oidc-bridge
+kill $(cat oidc-bridge.pid)
+npm start
 
-# Clean everything and start fresh
-docker-compose down -v
-docker-compose up -d
+# Restart Demo App
+cd demo-app
+kill $(cat demo-app.pid)
+npm start
+
+# Clean and restart
+docker compose down -v
+docker compose up -d
 ```
 
 ## Troubleshooting
 
 ### Port Already in Use
 
+**Port 5001 (macOS AirPlay Receiver)**
 ```bash
-# Check what's using the ports
-lsof -i :3000
-lsof -i :8880
+# Disable in System Preferences > Sharing > AirPlay Receiver
+# Or change PORT in vc-authn-oidc-bridge/.env
+```
 
-# Stop the conflicting process or change ports in docker-compose.yml
+**Port 8880**
+```bash
+lsof -i :8880
+kill <PID>
 ```
 
 ### Services Not Starting
@@ -96,24 +159,98 @@ lsof -i :8880
 docker info
 
 # View detailed logs
-docker-compose logs
+docker compose logs keycloak
+docker compose logs postgres
+
+# Check service health
+curl http://localhost:5001/health
+curl http://localhost:8081/api/oob/clients
+curl http://localhost:8880/realms/vdsp-demo
 ```
 
-### Authentication Not Working
+### QR Code Not Displaying
 
-1. Wait a bit longer - Keycloak takes time to start (especially PostgreSQL initialization)
-2. Check Keycloak is accessible: http://localhost:8880
-3. Verify realm imported: http://localhost:8880/realms/vdsp-demo
+1. Verify Dart Verifier is running:
+   ```bash
+   curl http://localhost:8081/api/oob/clients | grep federatedlogin
+   ```
+
+2. Check OIDC Bridge logs:
+   ```bash
+   tail -f vc-authn-oidc-bridge/oidc-bridge.log
+   ```
+
+3. Verify WebSocket connection in browser console
+
+### Authentication Errors
+
+**"Invalid client" error**
+- Check `KEYCLOAK_CLIENT_SECRET` matches in:
+  - `vc-authn-oidc-bridge/.env`
+  - `keycloak-config/vdsp-demo-realm.json`
+
+**"Session not found" error**
+- Clear browser cookies
+- Restart OIDC Bridge
+
+**"Keycloak redirect error" **
+- Verify `KEYCLOAK_REDIRECT_URI` in .env matches Keycloak IdP settings
+- Check Keycloak can reach `host.docker.internal:5001`
+
+### Keycloak Can't Reach OIDC Bridge
+
+When Keycloak runs in Docker:
+- Token URL should use: `http://host.docker.internal:5001/token`
+- JWKS URL should use: `http://host.docker.internal:5001/.well-known/jwks`
+- Authorization URL (browser) uses: `http://localhost:5001/authorize`
 
 ## Next Steps
 
-- Read [KEYCLOAK_SETUP.md](./KEYCLOAK_SETUP.md) for detailed configuration
-- Explore the code in `demo-app/server.js`
-- Customize the realm in Keycloak Admin Console
-- Add your own users and roles
+- **Architecture**: Read [FEDERATED_VC_LOGIN_ARCHITECTURE.md](./FEDERATED_VC_LOGIN_ARCHITECTURE.md)
+- **Keycloak Setup**: Read [VC_AUTHN_SETUP.md](./VC_AUTHN_SETUP.md)
+- **QR Code Flow**: Read [QR_CODE_FLOW_INTEGRATION.md](./QR_CODE_FLOW_INTEGRATION.md)
+- **Implementation**: Read [IMPLEMENTATION_GUIDE.md](./IMPLEMENTATION_GUIDE.md)
+
+## Test Scenarios
+
+### Scenario 1: First-Time VC Login
+1. User has never logged in before
+2. Shares VC via wallet
+3. Keycloak creates new user
+4. User attributes populated from VC claims
+5. User logged in automatically
+
+### Scenario 2: Returning VC User
+1. User has logged in before with VC
+2. Shares VC via wallet
+3. Keycloak finds existing user by email
+4. User attributes optionally updated
+5. User logged in automatically
+
+### Scenario 3: Different Credentials
+1. Configure different credential type in Dart Verifier
+2. Update mappers in Keycloak
+3. Test with different VC schema
+4. Verify claim extraction works
+
+## Success Criteria
+
+✅ All services start without errors
+✅ QR code displays on authorize endpoint
+✅ Wallet can scan and share credentials
+✅ Real-time WebSocket updates work
+✅ User automatically logged in after sharing VC
+✅ New user created in Keycloak with correct attributes
+✅ Session persists across page refreshes
 
 ## Need Help?
 
-- Check the logs: `docker-compose logs -f`
-- Review [KEYCLOAK_SETUP.md](./KEYCLOAK_SETUP.md) for detailed troubleshooting
-- Open an issue on GitHub
+- **Check logs first**: `tail -f *//*.log`
+- **Verify all services**: `curl http://localhost:{PORT}/health`
+- **Review architecture**: `docs/FEDERATED_VC_LOGIN_ARCHITECTURE.md`
+- **Test setup**: Run `./test-setup.sh`
+- **Open issue**: GitHub repository
+
+---
+
+**Welcome to the future of authentication! 🚀**
