@@ -175,6 +175,9 @@ kill_orphaned_processes() {
 # Main execution
 ##############################################################################
 main() {
+    local STOP_OIDC_ONLY=false
+    local STOP_DEMO_ONLY=false
+
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -186,18 +189,30 @@ main() {
                 kill_orphaned_processes
                 shift
                 ;;
+            --oidc-only)
+                STOP_OIDC_ONLY=true
+                shift
+                ;;
+            --demo-only)
+                STOP_DEMO_ONLY=true
+                shift
+                ;;
             --help)
                 echo "Usage: $0 [OPTIONS]"
                 echo ""
                 echo "Options:"
                 echo "  --docker        Also stop Docker services (PostgreSQL, Keycloak)"
                 echo "  --force         Kill any orphaned processes on ports 5001, 3000"
+                echo "  --oidc-only     Stop OIDC Bridge only"
+                echo "  --demo-only     Stop Demo App only"
                 echo "  --help          Show this help message"
                 echo ""
                 echo "Examples:"
                 echo "  $0                    # Stop Node.js services only"
                 echo "  $0 --docker          # Stop all services including Docker"
                 echo "  $0 --force           # Kill orphaned processes"
+                echo "  $0 --oidc-only       # Stop OIDC Bridge only"
+                echo "  $0 --demo-only       # Stop Demo App only"
                 exit 0
                 ;;
             *)
@@ -208,9 +223,15 @@ main() {
         esac
     done
 
-    # Stop services
-    stop_nodejs_services
-    stop_dart_verifier
+    # Stop services based on options
+    if [ "$STOP_OIDC_ONLY" = true ]; then
+        stop_service "$OIDC_BRIDGE_PID" "OIDC Bridge"
+    elif [ "$STOP_DEMO_ONLY" = true ]; then
+        stop_service "$DEMO_APP_PID" "Demo App"
+    else
+        stop_nodejs_services
+        stop_dart_verifier
+    fi
 
     if [ "$STOP_DOCKER" = true ]; then
         stop_docker_services
