@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Keycloak Demo</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>🔐 Keycloak Demo</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="/">Home</a>
+                <a href="/logout" class="btn-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="profile-header">
+                <h1>👤 User Profile</h1>
+                <p class="subtitle">Authenticated via Keycloak</p>
+            </div>
+
+            <div class="profile-grid">
+                <div class="profile-card">
+                    <h2>Basic Information</h2>
+                    <div class="profile-info">
+                        <div class="info-row">
+                            <span class="label">Subject ID:</span>
+                            <span class="value"><%= user.sub %></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Username:</span>
+                            <span class="value"><%= user.preferred_username || 'N/A' %></span>
+                        </div>
+                        <% if (user.email) { %>
+                        <div class="info-row">
+                            <span class="label">Email:</span>
+                            <span class="value"><%= user.email %></span>
+                        </div>
+                        <% } %>
+                        <% if (user.name) { %>
+                        <div class="info-row">
+                            <span class="label">Name:</span>
+                            <span class="value"><%= user.name %></span>
+                        </div>
+                        <% } %>
+                        <div class="info-row">
+                            <span class="label">Auth Time:</span>
+                            <span class="value"><%= new Date(user.auth_time * 1000).toLocaleString() %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-card">
+                    <h2>Token Claims</h2>
+                    <div class="vc-attributes">
+                        <% if (user.given_name) { %>
+                        <div class="attribute-row">
+                            <span class="attr-key">Given Name:</span>
+                            <span class="attr-value"><%= user.given_name %></span>
+                        </div>
+                        <% } %>
+                        <% if (user.family_name) { %>
+                        <div class="attribute-row">
+                            <span class="attr-key">Family Name:</span>
+                            <span class="attr-value"><%= user.family_name %></span>
+                        </div>
+                        <% } %>
+                        <% if (user.realm_access && user.realm_access.roles) { %>
+                        <div class="attribute-row">
+                            <span class="attr-key">Roles:</span>
+                            <span class="attr-value"><%= user.realm_access.roles.join(', ') %></span>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="token-section">
+                <h2>Token Contents</h2>
+                <details>
+                    <summary>View Raw Token Data</summary>
+                    <pre class="token-display"><%= rawToken %></pre>
+                </details>
+            </div>
+
+            <div class="actions">
+                <a href="/" class="btn">← Back to Home</a>
+                <a href="/logout" class="btn btn-secondary">Logout</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Keycloak Demo</p>
+        </div>
+    </footer>
+</body>
+</html>

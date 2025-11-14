@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: vdsp-postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - vdsp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: vdsp-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+    ports:
+      - "8880:8080"
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+      - ./keycloak-config:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --import-realm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - vdsp-network
+
+  demo-app:
+    build:
+      context: ./demo-app
+      dockerfile: Dockerfile
+    container_name: vdsp-demo-app
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      SESSION_SECRET: vdsp-demo-secret-key
+      KEYCLOAK_URL: http://localhost:8880
+      KEYCLOAK_REALM: vdsp-demo
+      KEYCLOAK_CLIENT_ID: vdsp-demo-app
+      KEYCLOAK_CLIENT_SECRET: demo-secret-change-in-production
+      APP_URL: http://localhost:3000
+      REDIRECT_URI: http://localhost:3000/callback
+    ports:
+      - "3000:3000"
+    depends_on:
+      - keycloak
+    networks:
+      - vdsp-network
+    volumes:
+      - ./demo-app:/app
+      - /app/node_modules
+
+volumes:
+  keycloak-data:
+    driver: local
+  postgres-data:
+    driver: local
+
+networks:
+  vdsp-network:
+    driver: bridge

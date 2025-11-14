@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Keycloak Demo</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>🔐 Keycloak Demo</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="/">Home</a>
+                <a href="/employee-portal">Employee Portal</a>
+                <a href="/age-verification">Age Verification</a>
+                <a href="/professional-portal">Professional Portal</a>
+                <% if (user) { %>
+                    <a href="/profile" class="btn-profile">Profile</a>
+                    <a href="/logout" class="btn-logout">Logout</a>
+                <% } else { %>
+                    <a href="/login" class="btn-login">Login</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="hero">
+                <h1 class="hero-title">Welcome to Keycloak Demo</h1>
+                <p class="hero-subtitle">Experience OAuth 2.0 Authentication with Keycloak</p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h2>Architecture Flow</h2>
+                <div class="flow-container">
+                    <div class="flow-step">
+                        <div class="step-icon">👤</div>
+                        <div class="step-label">User Browser</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="step-icon">🌐</div>
+                        <div class="step-label">Demo App</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="step-icon">🔑</div>
+                        <div class="step-label">Keycloak IAM</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scenarios-grid">
+                <h2>Demo Scenarios</h2>
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-icon">👔</div>
+                        <h3>Employee Portal</h3>
+                        <p>Secure employee portal access using Keycloak authentication.</p>
+                        <a href="/employee-portal" class="btn">Try Demo →</a>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🎂</div>
+                        <h3>Age Verification</h3>
+                        <p>Age-restricted service access with Keycloak.</p>
+                        <a href="/age-verification" class="btn">Try Demo →</a>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🏥</div>
+                        <h3>Professional Portal</h3>
+                        <p>Professional portal with secure authentication.</p>
+                        <a href="/professional-portal" class="btn">Try Demo →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features-section">
+                <h2>Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <div>
+                            <h4>Standards-Based</h4>
+                            <p>Uses OAuth 2.0 and OpenID Connect protocols</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔒</span>
+                        <div>
+                            <h4>Secure</h4>
+                            <p>Enterprise-grade security with Keycloak</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📈</span>
+                        <div>
+                            <h4>Scalable</h4>
+                            <p>Horizontal scaling with session management</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔄</span>
+                        <div>
+                            <h4>Flexible</h4>
+                            <p>Easy integration with existing systems</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <% if (!user) { %>
+            <div class="cta-section">
+                <h2>Ready to Experience Keycloak Authentication?</h2>
+                <p>Login with your credentials to see the complete flow in action</p>
+                <a href="/login" class="btn btn-primary btn-large">Login with Keycloak</a>
+            </div>
+            <% } else { %>
+            <div class="cta-section success">
+                <h2>✅ You're Authenticated!</h2>
+                <p>Welcome back, <%= user.preferred_username || user.sub %>!</p>
+                <a href="/profile" class="btn btn-primary btn-large">View Your Profile</a>
+            </div>
+            <% } %>
+
+            <div class="technical-info">
+                <h3>Technical Implementation</h3>
+                <div class="tech-details">
+                    <div class="tech-item">
+                        <strong>Authentication Protocol:</strong> OAuth 2.0 / OpenID Connect 1.0
+                    </div>
+                    <div class="tech-item">
+                        <strong>Identity Provider:</strong> Keycloak 23.0
+                    </div>
+                    <div class="tech-item">
+                        <strong>Backend:</strong> Node.js with Express
+                    </div>
+                    <div class="tech-item">
+                        <strong>Session Management:</strong> Memory-backed sessions
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 VDSP Bridge Demo | <a href="https://github.com/openwallet-foundation/acapy-vc-authn-oidc">Open Source on GitHub</a></p>
+            <p>Built with ❤️ using Affinidi Developer tools</p>
+        </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - VDSP Bridge Demo</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>🔐 VDSP Bridge Demo</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="/">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="error-page">
+                <h1>❌ <%= title %></h1>
+                <% if (error.message) { %>
+                <p class="error-message"><%= error.message %></p>
+                <% } %>
+                <% if (error.stack && process.env.NODE_ENV === 'development') { %>
+                <pre class="error-stack"><%= error.stack %></pre>
+                <% } %>
+                <a href="/" class="btn">← Back to Home</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 VDSP Bridge Demo</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Keycloak Demo</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>🔐 Keycloak Demo</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="/">Home</a>
+                <% if (user) { %>
+                    <a href="/profile">Profile</a>
+                    <a href="/logout" class="btn-logout">Logout</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="scenario-header">
+                <h1><%= scenarioName %></h1>
+                <p class="scenario-description"><%= description %></p>
+            </div>
+
+            <div class="scenario-details">
+                <div class="detail-card">
+                    <h3>📋 Required Credential</h3>
+                    <p><strong><%= requiredCredential %></strong></p>
+                </div>
+
+                <div class="detail-card">
+                    <h3>📝 Required Attributes</h3>
+                    <ul class="attributes-list">
+                        <% requiredAttributes.forEach(attr => { %>
+                        <li>✓ <%= attr %></li>
+                        <% }) %>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="scenario-flow">
+                <h3>Authentication Flow</h3>
+                <ol class="flow-steps">
+                    <li>Click "Login with Credential" below</li>
+                    <li>You'll be redirected to Keycloak</li>
+                    <li>Keycloak will redirect to VC-AuthN OIDC</li>
+                    <li>Scan the QR code with your Aries wallet</li>
+                    <li>Present your <%= requiredCredential %></li>
+                    <li>Access granted with verified claims</li>
+                </ol>
+            </div>
+
+            <% if (!user) { %>
+            <div class="cta-section">
+                <h2>Ready to Authenticate?</h2>
+                <p>Use your verifiable credential wallet to login</p>
+                <a href="<%= loginUrl %>" class="btn btn-primary btn-large">Login with Credential</a>
+            </div>
+            <% } else { %>
+            <div class="cta-section success">
+                <h2>✅ Already Authenticated!</h2>
+                <p>You're logged in and have access to this scenario.</p>
+                <a href="/profile" class="btn btn-primary">View Your Profile</a>
+            </div>
+            <% } %>
+
+            <div class="back-link">
+                <a href="/">← Back to Home</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 VDSP Bridge Demo</p>
+        </div>
+    </footer>
+</body>
+</html>
